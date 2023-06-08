@@ -1,0 +1,22 @@
+[package]
+name = "os"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cortex-m = "0.7.7"
+cortex-m-rt = "0.7.3"
+embedded-graphics = "0.8.0"
+embedded-graphics-core = "0.4.0"
+embedded-hal = {version = "0.2.7", features = ["unproven"]}
+fugit = "0.3.6"
+nb = "1.1.0"
+panic-halt = "0.2.0"
+pimoroni_badger2040 = "0.4.0"
+uc8151 = "0.2.0"
+
+[dev-dependencies]
+nb = "1.1.0"
+panic-halt = "0.2.0"
