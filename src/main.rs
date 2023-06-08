@@ -146,19 +146,8 @@ fn main() -> ! {
         }
 
         if option_changed {
-                
-            let bounds = Rectangle::new(Point::new(0, 0), Size::new(WIDTH, HEIGHT));
-
-            bounds
-                .into_styled(
-                    PrimitiveStyleBuilder::default()
-                    .stroke_color(BinaryColor::Off)
-                    .fill_color(BinaryColor::On)
-                    .stroke_width(1)
-                    .build(),
-                    )
-                .draw(&mut display)
-                .unwrap();
+            // on is apparently off
+            display.clear(BinaryColor::On);  
             Text::new(
                 value_text(selected_option),
                 bounds.center() + Point::new(0, 2),
