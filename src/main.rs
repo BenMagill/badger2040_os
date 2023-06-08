@@ -1,9 +1,9 @@
 #![no_std]
 #![no_main]
 
-use cortex_m::prelude::_embedded_hal_timer_CountDown;
+use cortex_m::prelude::{_embedded_hal_timer_CountDown, _embedded_hal_blocking_spi_Write, _embedded_hal_serial_Write};
 use embedded_graphics::mono_font::MonoTextStyle;
-use embedded_graphics::mono_font::ascii::FONT_10X20;
+use embedded_graphics::mono_font::ascii::{FONT_10X20, FONT_6X13};
 use embedded_graphics::pixelcolor::BinaryColor;
 use embedded_graphics::prelude::{Point, Size, DrawTarget};
 use embedded_graphics::{primitives::*, Drawable};
@@ -14,16 +14,19 @@ use pimoroni_badger2040::entry;
 use embedded_hal::digital::v2::{OutputPin, InputPin};
 use panic_halt as _;
 
-use pimoroni_badger2040::hal::gpio::{Pin, Output, PushPull};
+use pimoroni_badger2040::hal::gpio::{Pin, Output, PushPull, Input, PullUp};
 use pimoroni_badger2040::hal::gpio::bank0::*;
 use pimoroni_badger2040::hal::{pac, Spi, Timer, Clock};
 use pimoroni_badger2040::hal;
 use pimoroni_badger2040::hal::spi::{Disabled, Enabled};
 use pimoroni_badger2040::pac::SPI0;
-use uc8151::{WIDTH, HEIGHT};
+use uc8151::{WIDTH, HEIGHT, Uc8151};
 
 #[entry]
 fn main() -> ! {
+    let ON = BinaryColor::Off;
+    let OFF = BinaryColor::On;
+
     let mut pac = pac::Peripherals::take().unwrap();
     let cp = pac::CorePeripherals::take().unwrap();
 
@@ -110,7 +113,7 @@ fn main() -> ! {
 
     display.partial_update(bounds.try_into().unwrap()).unwrap();
 
-
+    // todo remove?
     countdown.start(MicrosDurationU32::millis(500));
     let _ = nb::block!(countdown.wait());
 
@@ -118,13 +121,32 @@ fn main() -> ! {
     // - create list of options for menu
     // - variable for which option is chosen
     let options = &[
+        "Home",
         "Shapes",
         "Text",
         "Buttons",
-        "Images"
+        "Images",
     ];
     let mut selected_option = 0u32;
     let total_options: u32 = options.len().try_into().unwrap_or(1);
+
+    // drawing sidebar
+    let bounds = Rectangle::new(Point::new(0, 0), Size::new(WIDTH/3, HEIGHT));
+    bounds.into_styled(
+        PrimitiveStyleBuilder::default()
+            .stroke_color(ON)
+            .fill_color(OFF)
+            .stroke_width(2)
+            .build(),
+        )
+        .draw(&mut display)
+        .unwrap();
+
+    for i in 0..=4 {
+        draw_option_box(&mut display, i, selected_option as i32 == i, options[i as usize]);
+    }
+    
+    display.partial_update(bounds.try_into().unwrap()).unwrap();
 
     loop {
         let mut option_changed = false;
@@ -147,18 +169,72 @@ fn main() -> ! {
 
         if option_changed {
             // on is apparently off
-            display.clear(BinaryColor::On);  
-            Text::new(
-                value_text(selected_option),
-                bounds.center() + Point::new(0, 2),
-                MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
-                )
-                .draw(&mut display)
-                .unwrap();
-            display.update();
+            //display.clear(BinaryColor::On);  
+            //Text::new(
+            //    value_text(selected_option),
+            //    bounds.center() + Point::new(0, 2),
+            //    MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
+            //    )
+            //    .draw(&mut display)
+            //    .unwrap();
+            //display.update();
+            render(&mut display, selected_option)
         }
         // execute_app(selected_option);
     }
+}
+type UcDisplay = Uc8151<Spi<Enabled, SPI0, 8>, Pin<Gpio17, Output<PushPull>>, Pin<Gpio20, Output<PushPull>>, Pin<Gpio26, Input<PullUp>>, Pin<Gpio21, Output<PushPull>>>;
+fn render(display: &mut UcDisplay, selected_option: u32) {
+    let options = &[
+        "Home",
+        "Shapes",
+        "Text",
+        "Buttons",
+        "Images",
+    ];
+    let bounds = Rectangle::new(Point::new(0, 0), Size::new(WIDTH/3, HEIGHT));
+    bounds.into_styled(
+        PrimitiveStyleBuilder::default()
+            .stroke_color(BinaryColor::Off)
+            .fill_color(BinaryColor::On)
+            .stroke_width(2)
+            .build(),
+        )
+        .draw(display);
+
+    for i in 0..=4 {
+        draw_option_box(display, i, selected_option as i32 == i, options[i as usize]);
+    }
+    
+    display.partial_update(bounds.try_into().unwrap()).unwrap();
+}
+
+fn draw_option_box<D: DrawTarget<Color = BinaryColor>>(display: &mut D, n: i32, selected: bool, text: &str) {
+        let size = HEIGHT/5;
+        let bounds = Rectangle::new(Point::new(0, n*(size as i32)), Size::new(WIDTH/3, size));
+        let stroke = match selected {
+           true => BinaryColor::On,
+           false => BinaryColor::Off
+        };
+        let fill = match selected {
+           true => BinaryColor::Off,
+           false => BinaryColor::On
+        };
+
+        bounds.into_styled(
+            PrimitiveStyleBuilder::default()
+                .stroke_color(stroke)
+                .fill_color(fill)
+                .stroke_width(2)
+                .build(),
+            )
+            .draw(display);
+        Text::new(
+            text,
+            bounds.center() + Point::new(0, 2),
+            MonoTextStyle::new(&FONT_6X13, stroke),
+            )
+            .draw(display);
 }
 
 fn execute_app(option: u32) {
