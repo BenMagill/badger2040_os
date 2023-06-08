@@ -83,7 +83,7 @@ fn main() -> ! {
     let mut delay = cortex_m::delay::Delay::new(cp.SYST, clocks.system_clock.freq().to_Hz());
 
     // Initialise display. Using the default LUT speed setting
-    display.setup(&mut delay, uc8151::LUT::Internal).unwrap();
+    display.setup(&mut delay, uc8151::LUT::Fast).unwrap();
 
     display.update().unwrap();
 
