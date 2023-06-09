@@ -1,5 +1,5 @@
 use embedded_graphics::{primitives::{Rectangle, PrimitiveStyleBuilder, Primitive}, prelude::{Point, Size}, pixelcolor::BinaryColor, Drawable, text::Text, mono_font::{MonoTextStyle, ascii::{FONT_6X13, FONT_10X20}}};
-use embedded_hal::digital::v2::InputPin;
+use embedded_hal::digital::v2::{InputPin, OutputPin};
 use pimoroni_badger2040::{Pins, hal::{gpio::{bank0::*, Output, PushPull, Pin, PullDown, Input, PullUp}, spi::Enabled}, pac::SPI0};
 use uc8151::{Uc8151, WIDTH, HEIGHT};
 use pimoroni_badger2040::hal::Spi;
@@ -17,7 +17,7 @@ pub struct Buttons {
     pub down: Pin<Gpio11, Input<PullDown>>,
 }
 
-pub struct App {
+pub struct Os {
     led: Pin<Gpio25, Output<PushPull>>,
     buttons: Buttons,
     options: &'static[&'static str; 5],
@@ -25,9 +25,9 @@ pub struct App {
     display: UcDisplay,
 }
 
-impl App {
-    pub fn new(buttons: Buttons, led: LED, display: UcDisplay) -> App {
-        return App {
+impl Os {
+    pub fn new(buttons: Buttons, led: LED, display: UcDisplay) -> Os {
+        return Os {
             buttons,
             led,
             options: &[
@@ -43,6 +43,8 @@ impl App {
     }
 
     pub fn run(&mut self) -> ! {
+        self.led.set_high();
+
         self.draw_sidebar();
 
         loop {
@@ -112,14 +114,16 @@ impl App {
             .draw(&mut self.display);
     }
 
-    fn run_app(&self) {
+    fn run_app(&mut self) {
         // questions
         //  how can an "app" know when it needs to re-render or not
         //  buttons app needs to be continuously called to know when buttons pressed
         //  but the others wont need to 
         //  I guess a flag could be send saying if this is the first render or not?
         //      so basically allow for an "init" phase and the "render" cycle
-
+        if self.selected_option == 321 {
+        self.home();
+        }
     }
 
 

@@ -2,7 +2,7 @@
 #![no_main]
 
 pub mod app;
-use app::app::{App, Buttons};
+use app::app::{Os, Buttons};
 use cortex_m::prelude::{_embedded_hal_timer_CountDown, _embedded_hal_blocking_spi_Write, _embedded_hal_serial_Write};
 use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::mono_font::ascii::{FONT_10X20, FONT_6X13};
@@ -26,9 +26,6 @@ use uc8151::{WIDTH, HEIGHT, Uc8151};
 
 #[entry]
 fn main() -> ! {
-    let ON = BinaryColor::Off;
-    let OFF = BinaryColor::On;
-
     let mut pac = pac::Peripherals::take().unwrap();
     let cp = pac::CorePeripherals::take().unwrap();
 
@@ -99,7 +96,7 @@ fn main() -> ! {
 
     display.update().unwrap();
 
-    let mut app = App::new(buttons, led, display);
+    let mut os = Os::new(buttons, led, display);
         
-    app.run();
+    os.run();
 }
