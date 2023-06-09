@@ -3,26 +3,12 @@
 
 pub mod app;
 use app::app::{Os, Buttons};
-use cortex_m::prelude::{_embedded_hal_timer_CountDown, _embedded_hal_blocking_spi_Write, _embedded_hal_serial_Write};
-use embedded_graphics::mono_font::MonoTextStyle;
-use embedded_graphics::mono_font::ascii::{FONT_10X20, FONT_6X13};
-use embedded_graphics::pixelcolor::BinaryColor;
-use embedded_graphics::prelude::{Point, Size, DrawTarget};
-use embedded_graphics::{primitives::*, Drawable};
-use embedded_graphics::text::Text;
+use cortex_m::prelude::_embedded_hal_timer_CountDown;
 use fugit::{HertzU32, MicrosDurationU32};
 use pimoroni_badger2040::entry;
-
-use embedded_hal::digital::v2::{OutputPin, InputPin};
 use panic_halt as _;
-
-use pimoroni_badger2040::hal::gpio::{Pin, Output, PushPull, Input, PullUp};
-use pimoroni_badger2040::hal::gpio::bank0::*;
-use pimoroni_badger2040::hal::{pac, Spi, Timer, Clock};
+use pimoroni_badger2040::hal::{pac, Timer, Clock};
 use pimoroni_badger2040::hal;
-use pimoroni_badger2040::hal::spi::{Disabled, Enabled};
-use pimoroni_badger2040::pac::SPI0;
-use uc8151::{WIDTH, HEIGHT, Uc8151};
 
 #[entry]
 fn main() -> ! {
@@ -54,7 +40,6 @@ fn main() -> ! {
     let cs = pins.inky_cs_gpio.into_push_pull_output();
     let busy = pins.inky_busy.into_pull_up_input();
     let reset = pins.inky_res.into_push_pull_output();
-
     let led = pins.led.into_push_pull_output();
     let a = pins.sw_a.into_pull_down_input();
     let b = pins.sw_b.into_pull_down_input();
@@ -97,6 +82,5 @@ fn main() -> ! {
     display.update().unwrap();
 
     let mut os = Os::new(buttons, led, display);
-        
     os.run();
 }

@@ -1,6 +1,6 @@
 use embedded_graphics::{primitives::{Rectangle, PrimitiveStyleBuilder, Primitive}, prelude::{Point, Size}, pixelcolor::BinaryColor, Drawable, text::Text, mono_font::{MonoTextStyle, ascii::{FONT_6X13, FONT_10X20}}};
 use embedded_hal::digital::v2::{InputPin, OutputPin};
-use pimoroni_badger2040::{Pins, hal::{gpio::{bank0::*, Output, PushPull, Pin, PullDown, Input, PullUp}, spi::Enabled}, pac::SPI0};
+use pimoroni_badger2040::{hal::{gpio::{bank0::*, Output, PushPull, Pin, PullDown, Input, PullUp}, spi::Enabled}, pac::SPI0};
 use uc8151::{Uc8151, WIDTH, HEIGHT};
 use pimoroni_badger2040::hal::Spi;
 
@@ -43,7 +43,7 @@ impl Os {
     }
 
     pub fn run(&mut self) -> ! {
-        self.led.set_high();
+        self.led.set_high().unwrap();
 
         self.draw_sidebar();
 
