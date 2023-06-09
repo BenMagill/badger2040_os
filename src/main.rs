@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
 
+extern crate alloc;
+
 pub mod app;
 use app::app::{Os, Buttons};
 use cortex_m::prelude::_embedded_hal_timer_CountDown;
@@ -9,9 +11,20 @@ use pimoroni_badger2040::entry;
 use panic_halt as _;
 use pimoroni_badger2040::hal::{pac, Timer, Clock};
 use pimoroni_badger2040::hal;
+use embedded_alloc::Heap;
+
+#[global_allocator]
+static HEAP: Heap = Heap::empty();
 
 #[entry]
 fn main() -> ! {
+    {
+        use core::mem::MaybeUninit;
+        const HEAP_SIZE: usize = 1024;
+        static mut HEAP_MEM: [MaybeUninit<u8>; HEAP_SIZE] = [MaybeUninit::uninit(); HEAP_SIZE];
+        unsafe { HEAP.init(HEAP_MEM.as_ptr() as usize, HEAP_SIZE) }
+    }
+
     let mut pac = pac::Peripherals::take().unwrap();
     let cp = pac::CorePeripherals::take().unwrap();
 
@@ -46,7 +59,8 @@ fn main() -> ! {
     let c = pins.sw_c.into_pull_down_input();
     let up = pins.sw_up.into_pull_down_input();
     let down = pins.sw_down.into_pull_down_input();
-    let buttons = Buttons {
+    let pins = Buttons {
+        led, 
         a,
         b,
         c,
@@ -81,6 +95,6 @@ fn main() -> ! {
 
     display.update().unwrap();
 
-    let mut os = Os::new(buttons, led, display);
+    let mut os = Os::new(pins, display);
     os.run();
 }
