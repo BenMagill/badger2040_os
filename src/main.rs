@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
 
+pub mod app;
+use app::app::{App, Buttons};
 use cortex_m::prelude::{_embedded_hal_timer_CountDown, _embedded_hal_blocking_spi_Write, _embedded_hal_serial_Write};
 use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::mono_font::ascii::{FONT_10X20, FONT_6X13};
@@ -56,6 +58,20 @@ fn main() -> ! {
     let busy = pins.inky_busy.into_pull_up_input();
     let reset = pins.inky_res.into_push_pull_output();
 
+    let led = pins.led.into_push_pull_output();
+    let a = pins.sw_a.into_pull_down_input();
+    let b = pins.sw_b.into_pull_down_input();
+    let c = pins.sw_c.into_pull_down_input();
+    let up = pins.sw_up.into_pull_down_input();
+    let down = pins.sw_down.into_pull_down_input();
+    let buttons = Buttons {
+        a,
+        b,
+        c,
+        up,
+        down,
+    };
+
     let timer = Timer::new(pac.TIMER, &mut pac.RESETS);
     let mut countdown = timer.count_down();
     
@@ -67,191 +83,23 @@ fn main() -> ! {
 
     let mut display = uc8151::Uc8151::new(spi, cs, dc, busy, reset);
 
-    let mut led_pin = pins.led.into_push_pull_output();
-    let button_a_pin = pins.sw_a.into_pull_down_input();
-    let button_b_pin = pins.sw_b.into_pull_down_input();
-    let button_c_pin = pins.sw_c.into_pull_down_input();
-    let button_up_pin = pins.sw_up.into_pull_down_input();
-    let button_down_pin = pins.sw_down.into_pull_down_input();
-
+    // clear display
     display.disable();
     countdown.start(MicrosDurationU32::micros(10));
     let _ = nb::block!(countdown.wait());
     display.enable();
     countdown.start(MicrosDurationU32::micros(10));
     let _ = nb::block!(countdown.wait());
-    // Wait for the screen to finish reset
     while display.is_busy() {}
 
     let mut delay = cortex_m::delay::Delay::new(cp.SYST, clocks.system_clock.freq().to_Hz());
 
-    // Initialise display. Using the default LUT speed setting
+    // Initialise display.
     display.setup(&mut delay, uc8151::LUT::Fast).unwrap();
 
     display.update().unwrap();
 
-    let bounds = Rectangle::new(Point::new(0, 0), Size::new(WIDTH, HEIGHT));
-
-    bounds
-        .into_styled(
-            PrimitiveStyleBuilder::default()
-            .stroke_color(BinaryColor::Off)
-            .fill_color(BinaryColor::On)
-            .stroke_width(1)
-            .build(),
-            )
-        .draw(&mut display)
-        .unwrap();
-
-    Text::new(
-        "hello world",
-        bounds.center() + Point::new(0, 2),
-        MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
-        )
-        .draw(&mut display)
-        .unwrap();
-
-    display.partial_update(bounds.try_into().unwrap()).unwrap();
-
-    // todo remove?
-    countdown.start(MicrosDurationU32::millis(500));
-    let _ = nb::block!(countdown.wait());
-
-    // todo: 
-    // - create list of options for menu
-    // - variable for which option is chosen
-    let options = &[
-        "Home",
-        "Shapes",
-        "Text",
-        "Buttons",
-        "Images",
-    ];
-    let mut selected_option = 0u32;
-    let total_options: u32 = options.len().try_into().unwrap_or(1);
-
-    // drawing sidebar
-    let bounds = Rectangle::new(Point::new(0, 0), Size::new(WIDTH/3, HEIGHT));
-    bounds.into_styled(
-        PrimitiveStyleBuilder::default()
-            .stroke_color(ON)
-            .fill_color(OFF)
-            .stroke_width(2)
-            .build(),
-        )
-        .draw(&mut display)
-        .unwrap();
-
-    for i in 0..=4 {
-        draw_option_box(&mut display, i, selected_option as i32 == i, options[i as usize]);
-    }
-    
-    display.partial_update(bounds.try_into().unwrap()).unwrap();
-
-    loop {
-        let mut option_changed = false;
-        // todo:
-        // - check if up or down pressed
-            // - if so change selected option
-        // - render side menu
-        // - render selection opions UI
-        if button_down_pin.is_high().unwrap() {
-            if selected_option != total_options -1 {
-                selected_option += 1;
-                option_changed = true;
-            } 
-        } else if button_up_pin.is_high().unwrap() {
-            if selected_option != 0 {
-                selected_option -= 1;
-                option_changed = true;
-            } 
-        }
-
-        if option_changed {
-            // on is apparently off
-            //display.clear(BinaryColor::On);  
-            //Text::new(
-            //    value_text(selected_option),
-            //    bounds.center() + Point::new(0, 2),
-            //    MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
-            //    )
-            //    .draw(&mut display)
-            //    .unwrap();
-            //display.update();
-            render(&mut display, selected_option)
-        }
-        // execute_app(selected_option);
-    }
-}
-type UcDisplay = Uc8151<Spi<Enabled, SPI0, 8>, Pin<Gpio17, Output<PushPull>>, Pin<Gpio20, Output<PushPull>>, Pin<Gpio26, Input<PullUp>>, Pin<Gpio21, Output<PushPull>>>;
-fn render(display: &mut UcDisplay, selected_option: u32) {
-    let options = &[
-        "Home",
-        "Shapes",
-        "Text",
-        "Buttons",
-        "Images",
-    ];
-    let bounds = Rectangle::new(Point::new(0, 0), Size::new(WIDTH/3, HEIGHT));
-    bounds.into_styled(
-        PrimitiveStyleBuilder::default()
-            .stroke_color(BinaryColor::Off)
-            .fill_color(BinaryColor::On)
-            .stroke_width(2)
-            .build(),
-        )
-        .draw(display);
-
-    for i in 0..=4 {
-        draw_option_box(display, i, selected_option as i32 == i, options[i as usize]);
-    }
-    
-    display.partial_update(bounds.try_into().unwrap()).unwrap();
-}
-
-fn draw_option_box<D: DrawTarget<Color = BinaryColor>>(display: &mut D, n: i32, selected: bool, text: &str) {
-        let size = HEIGHT/5;
-        let bounds = Rectangle::new(Point::new(0, n*(size as i32)), Size::new(WIDTH/3, size));
-        let stroke = match selected {
-           true => BinaryColor::On,
-           false => BinaryColor::Off
-        };
-        let fill = match selected {
-           true => BinaryColor::Off,
-           false => BinaryColor::On
-        };
-
-        bounds.into_styled(
-            PrimitiveStyleBuilder::default()
-                .stroke_color(stroke)
-                .fill_color(fill)
-                .stroke_width(2)
-                .build(),
-            )
-            .draw(display);
-        Text::new(
-            text,
-            bounds.center() + Point::new(0, 2),
-            MonoTextStyle::new(&FONT_6X13, stroke),
-            )
-            .draw(display);
-}
-
-fn execute_app(option: u32) {
-   match option {
-      0 => {},
-      1 => {},
-      2 => {},
-      3 => {},
-      _ => {},
-   } 
-}
-
-fn value_text(value: u32) -> &'static str {
-    const CHANNEL_NUM: &[&str] = &[
-        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
-    ];
-
-    #[allow(clippy::cast_sign_loss)]
-    CHANNEL_NUM[(value % 16) as usize]
+    let mut app = App::new(buttons, led, display);
+        
+    app.run();
 }
