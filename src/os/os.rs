@@ -15,12 +15,12 @@ type LED = Pin<Gpio25, Output<PushPull>>;
 
 // Could it only provide buttons and then get some object that needs to be rendered instead???
 pub trait App {
-    fn init(&mut self, buttons: &Buttons, display: &mut UcDisplay) -> ();
+    fn init(&mut self, pins: &Pins, display: &mut UcDisplay) -> ();
 
-    fn render(&mut self, buttons: &Buttons, display: &mut UcDisplay) -> ();
+    fn render(&mut self, pins: &Pins, display: &mut UcDisplay) -> ();
 }
 
-pub struct Buttons {
+pub struct Pins {
     pub led: LED,
     pub a: Pin<Gpio12, Input<PullDown>>,
     pub b: Pin<Gpio13, Input<PullDown>>,
@@ -30,7 +30,7 @@ pub struct Buttons {
 }
 
 pub struct Os {
-    pins: Buttons,
+    pins: Pins,
     options: &'static[&'static str; 5],
     selected_option: u32,
     display: UcDisplay,
@@ -38,7 +38,7 @@ pub struct Os {
 }
 
 impl Os {
-    pub fn new(buttons: Buttons, display: UcDisplay) -> Os {
+    pub fn new(buttons: Pins, display: UcDisplay) -> Os {
         let a = Home {};
         return Os {
             pins: buttons,

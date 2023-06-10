@@ -7,7 +7,7 @@ pub mod os;
 pub mod home;
 pub mod shapes;
 
-use os::os::{Os, Buttons};
+use os::os::{Os, Pins};
 use cortex_m::prelude::_embedded_hal_timer_CountDown;
 use fugit::{HertzU32, MicrosDurationU32};
 use pimoroni_badger2040::entry;
@@ -62,7 +62,7 @@ fn main() -> ! {
     let c = pins.sw_c.into_pull_down_input();
     let up = pins.sw_up.into_pull_down_input();
     let down = pins.sw_down.into_pull_down_input();
-    let pins = Buttons {
+    let pins = Pins {
         led, 
         a,
         b,
