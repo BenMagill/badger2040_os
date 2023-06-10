@@ -3,8 +3,11 @@
 
 extern crate alloc;
 
-pub mod app;
-use app::app::{Os, Buttons};
+pub mod os;
+pub mod home;
+pub mod shapes;
+
+use os::os::{Os, Buttons};
 use cortex_m::prelude::_embedded_hal_timer_CountDown;
 use fugit::{HertzU32, MicrosDurationU32};
 use pimoroni_badger2040::entry;

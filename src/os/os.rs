@@ -5,10 +5,12 @@ use pimoroni_badger2040::{hal::{gpio::{bank0::*, Output, PushPull, Pin, PullDown
 use uc8151::{Uc8151, WIDTH, HEIGHT};
 use pimoroni_badger2040::hal::Spi;
 
-static TOTAL_OPTIONS: u32 = 5;
-static APP_X: u32 = WIDTH/3;
+use crate::{home::Home, shapes::Shapes};
 
-type UcDisplay = Uc8151<Spi<Enabled, SPI0, 8>, Pin<Gpio17, Output<PushPull>>, Pin<Gpio20, Output<PushPull>>, Pin<Gpio26, Input<PullUp>>, Pin<Gpio21, Output<PushPull>>>;
+static TOTAL_OPTIONS: u32 = 5;
+pub static APP_X: u32 = WIDTH/3;
+
+pub type UcDisplay = Uc8151<Spi<Enabled, SPI0, 8>, Pin<Gpio17, Output<PushPull>>, Pin<Gpio20, Output<PushPull>>, Pin<Gpio26, Input<PullUp>>, Pin<Gpio21, Output<PushPull>>>;
 type LED = Pin<Gpio25, Output<PushPull>>;
 
 // Could it only provide buttons and then get some object that needs to be rendered instead???
@@ -16,38 +18,6 @@ pub trait App {
     fn init(&mut self, buttons: &Buttons, display: &mut UcDisplay) -> ();
 
     fn render(&mut self, buttons: &Buttons, display: &mut UcDisplay) -> ();
-}
-
-pub struct App1 {}
-
-impl App for App1 {
-    fn init(&mut self, buttons: &Buttons, display: &mut UcDisplay) {
-        let bounds = Rectangle::new(Point::new(APP_X as i32, 0), Size::new(WIDTH-APP_X, HEIGHT));
-
-        bounds
-            .into_styled(
-                PrimitiveStyleBuilder::default()
-                .stroke_color(BinaryColor::Off)
-                .fill_color(BinaryColor::On)
-                .stroke_width(1)
-                .build(),
-                )
-            .draw(display)
-            .unwrap();
-
-        Text::new(
-            "hello world",
-            bounds.top_left + Point::new(10, 20),
-            MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
-            )
-            .draw(display)
-            .unwrap();
-
-        display.partial_update(bounds.try_into().unwrap()).unwrap();
-
-    }
-
-    fn render(&mut self, buttons: &Buttons, display: &mut UcDisplay) {}
 }
 
 pub struct Buttons {
@@ -69,7 +39,7 @@ pub struct Os {
 
 impl Os {
     pub fn new(buttons: Buttons, display: UcDisplay) -> Os {
-        let a = App1 {};
+        let a = Home {};
         return Os {
             pins: buttons,
             options: &[
@@ -108,10 +78,9 @@ impl Os {
 
             if option_changed {
                 self.draw_sidebar();
-                // todo: also change which app is currently selected
                 
-                //self.load_app();
-                //self.app.init(&self.pins, &mut self.display);
+                self.load_app();
+                self.app.init(&self.pins, &mut self.display);
             }
 
             //self.app.render(&self.pins, &mut self.display);
@@ -165,6 +134,10 @@ impl Os {
     fn load_app(&mut self) {
         // TODO: This should set the current app loaded in the "os"
         // It should be allocated on a heap so that each app can have its own data and setup
+        match self.selected_option {
+            1 => { self.app = Box::new(Shapes {}) }
+            _ => { self.app = Box::new(Home {}) }
+        }
     }
 
     // random stuff 
