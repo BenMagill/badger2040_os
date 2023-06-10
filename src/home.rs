@@ -1,6 +1,6 @@
-use embedded_graphics::{primitives::{Rectangle, PrimitiveStyleBuilder, Primitive}, prelude::{Point, Size}, pixelcolor::BinaryColor, Drawable, text::Text, mono_font::{MonoTextStyle, ascii::{FONT_10X20}}};
-use uc8151::{WIDTH, HEIGHT};
-use crate::os::os::{App, Pins, UcDisplay, APP_X};
+use embedded_graphics::{primitives::{Rectangle, PrimitiveStyleBuilder, Primitive}, prelude::{Point}, pixelcolor::BinaryColor, Drawable, text::Text, mono_font::{MonoTextStyle, ascii::{FONT_10X20}}};
+
+use crate::os::os::{App, Pins, UcDisplay};
 
 pub struct Home {}
 
@@ -29,5 +29,5 @@ impl App for Home {
 
     }
 
-    fn render(&mut self, _buttons: &Pins, _display: &mut UcDisplay, bounds: Rectangle) {}
+    fn render(&mut self, _buttons: &Pins, _display: &mut UcDisplay, _bounds: Rectangle) {}
 }
