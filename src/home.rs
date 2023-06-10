@@ -1,16 +1,11 @@
-use alloc::boxed::Box;
-use embedded_graphics::{primitives::{Rectangle, PrimitiveStyleBuilder, Primitive}, prelude::{Point, Size}, pixelcolor::BinaryColor, Drawable, text::Text, mono_font::{MonoTextStyle, ascii::{FONT_6X13, FONT_10X20}}};
-use embedded_hal::digital::v2::{InputPin, OutputPin};
-use pimoroni_badger2040::{hal::{gpio::{bank0::*, Output, PushPull, Pin, PullDown, Input, PullUp}, spi::Enabled}, pac::SPI0};
-use uc8151::{Uc8151, WIDTH, HEIGHT};
-use pimoroni_badger2040::hal::Spi;
-
+use embedded_graphics::{primitives::{Rectangle, PrimitiveStyleBuilder, Primitive}, prelude::{Point, Size}, pixelcolor::BinaryColor, Drawable, text::Text, mono_font::{MonoTextStyle, ascii::{FONT_10X20}}};
+use uc8151::{WIDTH, HEIGHT};
 use crate::os::os::{App, Pins, UcDisplay, APP_X};
 
 pub struct Home {}
 
 impl App for Home {
-    fn init(&mut self, buttons: &Pins, display: &mut UcDisplay) {
+    fn init(&mut self, _buttons: &Pins, display: &mut UcDisplay) {
         let bounds = Rectangle::new(Point::new(APP_X as i32, 0), Size::new(WIDTH-APP_X, HEIGHT));
 
         bounds
@@ -36,5 +31,5 @@ impl App for Home {
 
     }
 
-    fn render(&mut self, buttons: &Pins, display: &mut UcDisplay) {}
+    fn render(&mut self, _buttons: &Pins, _display: &mut UcDisplay) {}
 }
