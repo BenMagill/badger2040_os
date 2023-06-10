@@ -5,9 +5,7 @@ use crate::os::os::{App, Pins, UcDisplay, APP_X};
 pub struct Shapes {}
 
 impl App for Shapes {
-    fn init(&mut self, _buttons: &Pins, display: &mut UcDisplay) {
-        let bounds = Rectangle::new(Point::new(APP_X as i32, 0), Size::new(WIDTH-APP_X, HEIGHT));
-
+    fn init(&mut self, _buttons: &Pins, display: &mut UcDisplay, bounds: Rectangle) {
         bounds
             .into_styled(
                 PrimitiveStyleBuilder::default()
@@ -31,6 +29,6 @@ impl App for Shapes {
 
     }
 
-    fn render(&mut self, _buttons: &Pins, _display: &mut UcDisplay) {}
+    fn render(&mut self, _buttons: &Pins, _display: &mut UcDisplay, bounds: Rectangle) {}
 }
 

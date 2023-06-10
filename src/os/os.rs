@@ -15,9 +15,9 @@ type LED = Pin<Gpio25, Output<PushPull>>;
 
 // Could it only provide buttons and then get some object that needs to be rendered instead???
 pub trait App {
-    fn init(&mut self, pins: &Pins, display: &mut UcDisplay) -> ();
+    fn init(&mut self, pins: &Pins, display: &mut UcDisplay, bounds: Rectangle) -> ();
 
-    fn render(&mut self, pins: &Pins, display: &mut UcDisplay) -> ();
+    fn render(&mut self, pins: &Pins, display: &mut UcDisplay, bounds: Rectangle) -> ();
 }
 
 pub struct Pins {
@@ -56,11 +56,13 @@ impl Os {
     }
 
     pub fn run(&mut self) -> ! {
+        let bounds = Rectangle::new(Point::new(APP_X as i32, 0), Size::new(WIDTH-APP_X, HEIGHT));
+
         self.pins.led.set_high().unwrap();
 
         self.draw_sidebar();
 
-        self.app.init(&self.pins, &mut self.display);
+        self.app.init(&self.pins, &mut self.display, bounds);
 
         loop {
             let mut option_changed = false;
@@ -80,7 +82,7 @@ impl Os {
                 self.draw_sidebar();
                 
                 self.load_app();
-                self.app.init(&self.pins, &mut self.display);
+                self.app.init(&self.pins, &mut self.display, bounds);
             }
 
             //self.app.render(&self.pins, &mut self.display);
@@ -97,7 +99,8 @@ impl Os {
                 .stroke_width(2)
                 .build(),
             )
-            .draw(&mut self.display);
+            .draw(&mut self.display)
+            .unwrap();
 
         for i in 0..=4 {
             self.draw_option_box(i, self.options[i as usize], i == self.selected_option as i32);
@@ -122,13 +125,15 @@ impl Os {
                 .stroke_width(2)
                 .build(),
             )
-            .draw(&mut self.display);
+            .draw(&mut self.display)
+            .unwrap();
         Text::new(
             text,
             bounds.center() + Point::new(0, 2),
             MonoTextStyle::new(&FONT_6X13, fill.invert()),
             )
-            .draw(&mut self.display);
+            .draw(&mut self.display)
+            .unwrap();
     }
 
     fn load_app(&mut self) {
