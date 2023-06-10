@@ -13,10 +13,11 @@ pub static APP_X: u32 = WIDTH/3;
 pub type UcDisplay = Uc8151<Spi<Enabled, SPI0, 8>, Pin<Gpio17, Output<PushPull>>, Pin<Gpio20, Output<PushPull>>, Pin<Gpio26, Input<PullUp>>, Pin<Gpio21, Output<PushPull>>>;
 type LED = Pin<Gpio25, Output<PushPull>>;
 
-// Could it only provide buttons and then get some object that needs to be rendered instead???
 pub trait App {
+    // This should not call the update funciton, instead let the os do it
     fn init(&mut self, pins: &Pins, display: &mut UcDisplay, bounds: Rectangle) -> ();
 
+    // This should call the update function when it is necessary
     fn render(&mut self, pins: &Pins, display: &mut UcDisplay, bounds: Rectangle) -> ();
 }
 
@@ -35,6 +36,7 @@ pub struct Os {
     selected_option: u32,
     display: UcDisplay,
     app: Box<dyn App>,
+    app_bounds: Rectangle,
 }
 
 impl Os {
@@ -52,17 +54,14 @@ impl Os {
             selected_option: 0,
             display,
             app: Box::new(a),
+            app_bounds: Rectangle::new(Point::new(APP_X as i32, 0), Size::new(WIDTH-APP_X, HEIGHT)),
         }
     }
 
     pub fn run(&mut self) -> ! {
-        let bounds = Rectangle::new(Point::new(APP_X as i32, 0), Size::new(WIDTH-APP_X, HEIGHT));
-
         self.pins.led.set_high().unwrap();
 
-        self.draw_sidebar();
-
-        self.app.init(&self.pins, &mut self.display, bounds);
+        self.handle_option_change();
 
         loop {
             let mut option_changed = false;
@@ -79,16 +78,22 @@ impl Os {
             }
 
             if option_changed {
-                self.draw_sidebar();
-                
-                self.load_app();
-                self.app.init(&self.pins, &mut self.display, bounds);
+                self.handle_option_change();
             }
 
-            //self.app.render(&self.pins, &mut self.display);
+            self.app.render(&self.pins, &mut self.display, self.app_bounds);
+            //self.display.partial_update(self.app_bounds.try_into().unwrap()).unwrap();
         }
     }
 
+    fn handle_option_change(&mut self) {
+        self.load_app();
+        self.draw_sidebar();
+        
+        self.app.init(&self.pins, &mut self.display, self.app_bounds);
+
+        self.display.partial_update(Rectangle::new(Point::new(0, 0), Size::new(WIDTH, HEIGHT)).try_into().unwrap()).unwrap();
+    }
 
     fn draw_sidebar(&mut self) {
         let bounds = Rectangle::new(Point::new(0, 0), Size::new(WIDTH/3, HEIGHT));
@@ -105,8 +110,6 @@ impl Os {
         for i in 0..=4 {
             self.draw_option_box(i, self.options[i as usize], i == self.selected_option as i32);
         }
-        
-        self.display.partial_update(bounds.try_into().unwrap()).unwrap();
     }
 
     fn draw_option_box(&mut self, n: i32, text: &str, selected: bool) {

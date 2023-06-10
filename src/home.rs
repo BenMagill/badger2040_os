@@ -24,9 +24,6 @@ impl App for Home {
             )
             .draw(display)
             .unwrap();
-
-        display.partial_update(bounds.try_into().unwrap()).unwrap();
-
     }
 
     fn render(&mut self, _buttons: &Pins, _display: &mut UcDisplay, _bounds: Rectangle) {}
