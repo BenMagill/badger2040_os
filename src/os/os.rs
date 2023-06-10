@@ -5,7 +5,7 @@ use pimoroni_badger2040::{hal::{gpio::{bank0::*, Output, PushPull, Pin, PullDown
 use uc8151::{Uc8151, WIDTH, HEIGHT};
 use pimoroni_badger2040::hal::Spi;
 
-use crate::{home::Home, shapes::Shapes};
+use crate::{home::Home, shapes::Shapes, buttons::Buttons};
 
 static TOTAL_OPTIONS: u32 = 5;
 pub static APP_X: u32 = WIDTH/3;
@@ -82,7 +82,6 @@ impl Os {
             }
 
             self.app.render(&self.pins, &mut self.display, self.app_bounds);
-            //self.display.partial_update(self.app_bounds.try_into().unwrap()).unwrap();
         }
     }
 
@@ -144,35 +143,8 @@ impl Os {
         // It should be allocated on a heap so that each app can have its own data and setup
         match self.selected_option {
             1 => { self.app = Box::new(Shapes {}) }
+            3 => { self.app = Box::new(Buttons::new()) }
             _ => { self.app = Box::new(Home {}) }
         }
-    }
-
-    // random stuff 
-    fn home(&mut self)  {
-  
-        let bounds = Rectangle::new(Point::new(0, 0), Size::new(WIDTH, HEIGHT));
-
-        bounds
-            .into_styled(
-                PrimitiveStyleBuilder::default()
-                .stroke_color(BinaryColor::Off)
-                .fill_color(BinaryColor::On)
-                .stroke_width(1)
-                .build(),
-                )
-            .draw(&mut self.display)
-            .unwrap();
-
-        Text::new(
-            "hello world",
-            bounds.center() + Point::new(0, 2),
-            MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
-            )
-            .draw(&mut self.display)
-            .unwrap();
-
-        self.display.partial_update(bounds.try_into().unwrap()).unwrap();
-
     }
 }

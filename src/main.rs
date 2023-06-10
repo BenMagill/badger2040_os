@@ -6,6 +6,7 @@ extern crate alloc;
 pub mod os;
 pub mod home;
 pub mod shapes;
+pub mod buttons;
 
 use os::os::{Os, Pins};
 use cortex_m::prelude::_embedded_hal_timer_CountDown;
