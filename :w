@@ -5,23 +5,12 @@ use crate::os::os::{App, Pins, UcDisplay};
 
 pub struct Buttons {
     a: bool,
-    b: bool,
-    c: bool,
 }
 
 impl Buttons {
     pub fn new () -> Buttons {
         return Buttons {
             a: false, 
-            b: false, 
-            c: false, 
-        }
-    }
-    
-    fn button_status(value: bool) -> &'static str {
-        match value {
-            true => "ON",
-            false => "OFF",
         }
     }
 
@@ -47,28 +36,10 @@ impl Buttons {
             )
             .draw(display)
             .unwrap();
-        
-        let a_text = Buttons::button_status(self.a);
-        let b_text = Buttons::button_status(self.b);
-        let c_text = Buttons::button_status(self.c);
 
         Text::new(
-            a_text,
+            "OFF",
             bounds.top_left + Point::new(40, 20),
-            MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
-            )
-            .draw(display)
-            .unwrap();
-        Text::new(
-            b_text,
-            bounds.top_left + Point::new(40, 40),
-            MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
-            )
-            .draw(display)
-            .unwrap();
-        Text::new(
-            c_text,
-            bounds.top_left + Point::new(40, 60),
             MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
             )
             .draw(display)
@@ -90,7 +61,7 @@ impl App for Buttons {
             .draw(display)
             .unwrap();
         
-        self.draw(display, bounds);
+
     }
 
     fn render(&mut self, buttons: &Pins, display: &mut UcDisplay, bounds: Rectangle) {
@@ -104,23 +75,17 @@ impl App for Buttons {
                 )
             .draw(display)
             .unwrap();
-
-        let mut change = false;        
+        
         if !self.a && buttons.a.is_high().unwrap() {
             self.a = true;
-            change = true;
-        }
-        if !self.b && buttons.b.is_high().unwrap() {
-            self.b = true;
-            change = true;
-        }
-        if !self.c && buttons.c.is_high().unwrap() {
-            self.c = true;
-            change = true
-        }
+            Text::new(
+                "ON",
+                bounds.top_left + Point::new(10, 20),
+                MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
+                )
+                .draw(display)
+                .unwrap();
 
-        if change {
-            self.draw(display, bounds);
             display.partial_update(bounds.try_into().unwrap()).unwrap();
         }
     }
