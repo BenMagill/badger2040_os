@@ -18,8 +18,29 @@ impl App for Home {
             .unwrap();
 
         Text::new(
-            "hello world",
-            bounds.top_left + Point::new(10, 20),
+            "Hello World!",
+            bounds.top_left + Point::new(5, 20),
+            MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
+            )
+            .draw(display)
+            .unwrap();
+        Text::new(
+            "Use the up and down",
+            bounds.top_left + Point::new(5, 60),
+            MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
+            )
+            .draw(display)
+            .unwrap();
+        Text::new(
+            "buttons to switch",
+            bounds.top_left + Point::new(5, 80),
+            MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
+            )
+            .draw(display)
+            .unwrap();
+        Text::new(
+            "apps.",
+            bounds.top_left + Point::new(5, 100),
             MonoTextStyle::new(&FONT_10X20, BinaryColor::Off),
             )
             .draw(display)
