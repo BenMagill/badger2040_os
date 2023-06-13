@@ -20,8 +20,8 @@ impl Buttons {
     
     fn button_status(value: bool) -> &'static str {
         match value {
-            true => "ON",
-            false => "OFF",
+            true => "WORKING",
+            false => "NOT PRESSED",
         }
     }
 
