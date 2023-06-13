@@ -5,7 +5,7 @@ use pimoroni_badger2040::{hal::{gpio::{bank0::*, Output, PushPull, Pin, PullDown
 use uc8151::{Uc8151, WIDTH, HEIGHT};
 use pimoroni_badger2040::hal::Spi;
 
-use crate::{home::Home, shapes::Shapes, buttons::Buttons};
+use crate::{home::Home, shapes::Shapes, buttons::Buttons, text::TextApp};
 
 static TOTAL_OPTIONS: u32 = 5;
 pub static APP_X: u32 = WIDTH/3;
@@ -143,6 +143,7 @@ impl Os {
         // It should be allocated on a heap so that each app can have its own data and setup
         match self.selected_option {
             1 => { self.app = Box::new(Shapes {}) }
+            2 => { self.app = Box::new(TextApp {}) }
             3 => { self.app = Box::new(Buttons::new()) }
             _ => { self.app = Box::new(Home {}) }
         }

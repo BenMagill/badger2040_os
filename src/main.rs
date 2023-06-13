@@ -7,6 +7,7 @@ pub mod os;
 pub mod home;
 pub mod shapes;
 pub mod buttons;
+pub mod text;
 
 use os::os::{Os, Pins};
 use cortex_m::prelude::_embedded_hal_timer_CountDown;
